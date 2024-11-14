@@ -4,6 +4,7 @@ import com.example.taskmanagerdev.dto.CreateTaskRequestDto;
 import com.example.taskmanagerdev.dto.TaskResponseDto;
 import com.example.taskmanagerdev.entity.Task;
 import com.example.taskmanagerdev.service.TaskService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ public class TaskController {
     private final TaskService taskService;
 
     @PostMapping
-    public ResponseEntity<TaskResponseDto> save(@RequestBody CreateTaskRequestDto requestDto) {
+    public ResponseEntity<TaskResponseDto> save(@Valid @RequestBody CreateTaskRequestDto requestDto) {
         TaskResponseDto responseDto = taskService.save(requestDto.getTitle(), requestDto.getContents(), requestDto.getUsername());
 
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
