@@ -1,9 +1,11 @@
 package com.example.taskmanagerdev.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 
 @Entity
 @Table(name = "task")
+@Getter
 public class Task extends BaseEntity {
 
     @Id
@@ -11,7 +13,7 @@ public class Task extends BaseEntity {
     private Long id;
 
     @Column(nullable = false)
-    private String taskName;
+    private String title;
 
     @Column(columnDefinition = "longtext")
     private String contents;
@@ -19,4 +21,12 @@ public class Task extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "member_id")
     private Member member;
+
+    public Task(){}
+
+    public Task(String title, String contents, Member member) {
+        this.title = title;
+        this.contents = contents;
+        this.member = member;
+    }
 }
