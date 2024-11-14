@@ -21,6 +21,9 @@ public class Member extends BaseEntity {
     @Column(nullable = false)
     private String email;
 
-    private Integer age;
-
+    public Member(String username, String password, String email) {
+        this.username = username;
+        this.password = password;
+        this.email = email;
+    }
 }
