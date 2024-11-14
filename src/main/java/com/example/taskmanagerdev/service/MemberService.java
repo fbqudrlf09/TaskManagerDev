@@ -7,6 +7,7 @@ import com.example.taskmanagerdev.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
@@ -19,7 +20,6 @@ public class MemberService {
 
     public SignUpResponseDto signUp(String username, String password, String email) {
         Member member = new Member(username, password, email);
-
         Member saveMember = memberRepository.save(member);
 
         return new SignUpResponseDto(saveMember.getId(), saveMember.getUsername(), saveMember.getEmail());
@@ -36,5 +36,20 @@ public class MemberService {
         return memberRepository.findById(id).orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND,  "해당 아이디를 찾지 못했습니다. ID = " + id));
 
+    }
+
+    @Transactional
+    public void updatePassword(Long id, String oldPassword, String newPassword) {
+        Member findMember = findByIdOrElseThrow(id);
+
+        if (!findMember.getPassword().equals(oldPassword)) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "해당 비밀번호가 맞지 않습니다. ID = " + id);
+        }
+
+        findMember.updatePassword(newPassword);
+    }
+
+    public void deleteById(Long id) {
+        memberRepository.deleteById(id);
     }
 }
