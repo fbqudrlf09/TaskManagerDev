@@ -15,12 +15,14 @@ public class TestDataInit {
     private final MemberRepository memberRepository;
     private final TaskRepository taskRepository;
 
+
+    // 테스트용 데이터 입력
     @PostConstruct
     public void Init() {
         Member member1 = new Member("tes1", "tes1", "test@naver.com");
         Member member2 = new Member("tes2", "tes2", "tes2@naver.com");
         Member member3 = new Member("tes3", "tes3", "tes2@naver.com");
-        Member member4 = new Member("tes3", "tes3", "tes2@naver.com");
+        Member member4 = new Member("tes4", "tes4", "tes2@naver.com");
 
         Task task1 = new Task("task1", "taskContents1", member1);
         Task task2 = new Task("task2", "taskContents2", member1);
@@ -39,6 +41,5 @@ public class TestDataInit {
         taskRepository.save(task4);
         taskRepository.save(task5);
         taskRepository.save(task6);
-
     }
 }

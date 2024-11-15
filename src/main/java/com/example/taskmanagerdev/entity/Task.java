@@ -29,4 +29,9 @@ public class Task extends BaseEntity {
         this.contents = contents;
         this.member = member;
     }
+
+    public void update(String title, String contents) {
+        this.title = title;
+        this.contents = contents;
+    }
 }

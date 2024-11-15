@@ -5,9 +5,12 @@ import com.example.taskmanagerdev.entity.Member;
 import com.example.taskmanagerdev.entity.Task;
 import com.example.taskmanagerdev.repository.MemberRepository;
 import com.example.taskmanagerdev.repository.TaskRepository;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -21,7 +24,7 @@ public class TaskService {
 
     public TaskResponseDto save(String title, String contents, String username) {
 
-        Member findMember = findMemberByUsernameOrElseThrow(username);
+        Member findMember = memberRepository.findMemberByUsernameOrElseTrow(username);
 
         Task task = new Task(title, contents, findMember);
         taskRepository.save(task);
@@ -35,25 +38,36 @@ public class TaskService {
 
     public TaskResponseDto findTaskById(Long id) {
 
-        Task findTask = findTaskByIdOrElseThrow(id);
+        Task findTask = taskRepository.findTaskByIdOrElseThrow(id);
 
         return new TaskResponseDto(findTask.getId(), findTask.getTitle(), findTask.getContents());
     }
 
-    private Member findMemberByUsernameOrElseThrow(String username) {
-        return memberRepository.findMemberByUsername(username).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 유저이름을 가진 유저는 없습니다 username = " + username)
-        );
-    }
+    @Transactional
+    public void deleteTaskById(Long id, Long loginId) {
+        Task findTask = taskRepository.findTaskByIdOrElseThrow(id);
+        checkTaskUpdatePermission(findTask, loginId);
 
-    private Task findTaskByIdOrElseThrow(Long id) {
-        return taskRepository.findById(id).orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "해당 아이디를 가진 일정이 없습니다 id = " + id)
-        );
-    }
-
-    public void deleteTaskById(Long id) {
-        Task findTask = findTaskByIdOrElseThrow(id);
         taskRepository.delete(findTask);
+    }
+
+    @Transactional
+    public TaskResponseDto update(Long id, String title, String contents, Long loginId) {
+        Task findTask = taskRepository.findTaskByIdOrElseThrow(id);
+        checkTaskUpdatePermission(findTask, loginId);
+        findTask.update(title, contents);
+
+        return new TaskResponseDto(findTask.getId(), findTask.getTitle(), findTask.getContents());
+    }
+
+    /**
+     * 로그인한 ID와 작성한 일정의 ID가 같은지 확인하는 코드
+     * @param task          일정 목록
+     * @param loginId       현재 로그인한 ID
+     */
+    public void checkTaskUpdatePermission(Task task, Long loginId) {
+        if (task.getMember().getId() != loginId) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "해당 일정 변경에 대한 권한이 없습니다");
+        }
     }
 }

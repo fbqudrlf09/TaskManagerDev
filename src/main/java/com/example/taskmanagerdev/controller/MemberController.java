@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/members")
@@ -38,7 +39,7 @@ public class MemberController {
 
         // 맞는 회원일 경우 세션에 추가
         HttpSession session = request.getSession();
-        session.setAttribute(SessionConst.LOGIN_MEMBER, loginMember);
+        session.setAttribute(SessionConst.LOGIN_MEMBER, loginMember.getId());
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -63,16 +64,25 @@ public class MemberController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Void> updatePassword(@PathVariable Long id, @Valid @RequestBody UpdatePasswordRequestDto requestDto) {
+    public ResponseEntity<Void> updatePassword(@PathVariable Long id, @Valid @RequestBody UpdatePasswordRequestDto requestDto, HttpServletRequest request) {
+        checkAuthorized(request, id, "해당 아이디에 대한 변경할 권한이 없습니다");
         memberService.updatePassword(id, requestDto.getOldPassword(), requestDto.getNewPassword());
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteById(@PathVariable Long id, HttpServletRequest request) {
+        checkAuthorized(request, id, "해당 아이디에 대한 삭제할 권한이 없습니다");
         memberService.deleteById(id);
 
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    private static void checkAuthorized(HttpServletRequest request, Long id, String message) {
+        HttpSession session = request.getSession();
+        if (session.getAttribute(SessionConst.LOGIN_MEMBER) != id) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, message);
+        }
     }
 }
